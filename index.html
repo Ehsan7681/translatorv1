@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مترجم هوشمند</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'B Titr';
+            src: url('https://cdn.fontcdn.ir/Font/Persian/B%20Titr/B%20Titr.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'B Nazanin';
+            src: url('https://cdn.fontcdn.ir/Font/Persian/B%20Nazanin/B%20Nazanin.ttf') format('truetype');
+        }
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #5d93d1;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --border-color: #e1e5eb;
+            --input-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --status-connected: #4CAF50;
+            --status-disconnected: #F44336;
+            --font-size-main: clamp(16px, 4vw, 18px);
+            --font-size-sub: clamp(14px, 3vw, 16px);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3a5a8c;
+            --secondary-color: #4a6fa5;
+            --accent-color: #5d93d1;
+            --background-color: #1a1a2e;
+            --text-color: #e1e5eb;
+            --border-color: #2d3748;
+            --input-bg: #2a2a3c;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'B Nazanin', sans-serif;
+            font-size: var(--font-size-sub);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header, .logo, h3, button, textarea {
+            font-family: 'B Titr', sans-serif;
+            font-size: var(--font-size-main);
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+        }
+
+        .logo {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .settings {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--status-disconnected);
+        }
+
+        .status-indicator.connected {
+            background-color: var(--status-connected);
+        }
+
+        .translator {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .text-panel {
+            background-color: var(--input-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+            width: 100%;
+        }
+
+        .panel-header {
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .language-selector select {
+            padding: 0.3rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-family: 'B Nazanin', sans-serif;
+            font-size: var(--font-size-sub);
+        }
+
+        .auto-detect {
+            color: var(--secondary-color);
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            border: none;
+            resize: vertical;
+            background-color: transparent;
+            color: var(--text-color);
+            line-height: 1.6;
+            outline: none;
+            min-height: 100px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .translate-button, .stop-button, .clear-button, .swap-button, .copy-button, .save-button, .save-srt-button {
+            padding: 0.6rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .translate-button:hover, .swap-button:hover, .copy-button:hover, .save-button:hover, .save-srt-button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .stop-button {
+            background-color: var(--status-disconnected);
+        }
+
+        .stop-button:hover {
+            background-color: #d32f2f;
+        }
+
+        .clear-button {
+            background-color: #757575;
+        }
+
+        .clear-button:hover {
+            background-color: #616161;
+        }
+
+        .translation-status {
+            text-align: center;
+            margin: 0.5rem 0;
+            color: var(--secondary-color);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-group {
+            background-color: var(--input-bg);
+            border-radius: 12px;
+            padding: 0.8rem;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .control-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .control-option {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'B Nazanin', sans-serif;
+            font-size: var(--font-size-sub);
+        }
+
+        .control-option:hover, .control-option.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .api-settings, .customization-settings {
+            margin-top: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .api-settings input, .customization-settings input, .customization-settings select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-family: 'B Nazanin', sans-serif;
+            font-size: var(--font-size-sub);
+        }
+
+        .api-settings button, .customization-settings button {
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .api-settings button:hover, .customization-settings button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 6px var(--shadow-color);
+            z-index: 1000;
+            font-size: 1.2rem;
+        }
+
+        .history-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--input-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+        }
+
+        .history-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'B Nazanin', sans-serif;
+            font-size: var(--font-size-sub);
+        }
+
+        .history-item button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'B Titr', sans-serif;
+            font-size: var(--font-size-main);
+        }
+
+        .history-item button:hover {
+            background-color: #cc0000;
+        }
+
+        @media (min-width: 768px) {
+            .translator {
+                flex-direction: row;
+            }
+            .text-panel {
+                width: 50%;
+                min-height: 250px;
+            }
+            .controls {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            .text-panel {
+                min-height: 120px;
+            }
+            .button-container {
+                flex-direction: column;
+            }
+            .translate-button, .stop-button, .clear-button, .swap-button, .copy-button, .save-button, .save-srt-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span>مترجم هوشمند</span>
+            </div>
+            <div class="settings">
+                <div class="connection-status" id="lmStatus">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">اتصال به LM Studio</span>
+                </div>
+                <div class="connection-status" id="geminiStatus">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">اتصال به Gemini</span>
+                </div>
+                <div class="connection-status" id="openRouterStatus">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">اتصال به OpenRouter</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="translator">
+                <div class="text-panel">
+                    <div class="panel-header">
+                        <div class="language-selector">
+                            <span>زبان ورودی:</span>
+                            <div class="auto-detect" id="detectedLang">تشخیص خودکار</div>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <textarea id="inputText" placeholder="متن خود را وارد کنید یا فایل آپلود کنید..."></textarea>
+                    </div>
+                </div>
+
+                <div class="text-panel">
+                    <div class="panel-header">
+                        <div class="language-selector">
+                            <span>زبان خروجی:</span>
+                            <select id="outputLanguage"></select>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <textarea id="outputText" placeholder="ترجمه در اینجا نمایش داده می‌شود..." readonly></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="button-container">
+                <button class="translate-button" id="translateButton">ترجمه</button>
+                <button class="stop-button" id="stopButton">توقف ترجمه</button>
+                <button class="clear-button" id="clearButton">پاک کردن</button>
+                <button class="swap-button" id="swapButton">جابه‌جایی</button>
+                <button class="copy-button" id="copyButton">کپی</button>
+                <button class="save-button" id="saveButton">ذخیره (Word)</button>
+                <button class="save-srt-button" id="saveSrtButton">ذخیره (SRT)</button>
+            </div>
+            <div class="translation-status" id="translationStatus"></div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <h3>لحن ترجمه</h3>
+                    <div class="control-options">
+                        <div class="control-option active" data-tone="formal">رسمی</div>
+                        <div class="control-option" data-tone="informal">غیررسمی</div>
+                        <div class="control-option" data-tone="literary">ادبی</div>
+                        <div class="control-option" data-tone="scientific">علمی</div>
+                        <div class="control-option" data-tone="summary">خلاصه</div>
+                        <div class="control-option" data-tone="friendly">دوستانه</div>
+                        <div class="control-option" data-tone="humorous">طنزآمیز</div>
+                        <div class="control-option" data-tone="professional">حرفه‌ای</div>
+                        <div class="control-option" data-tone="childish">کودکانه</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>تنظیمات API</h3>
+                    <div class="api-settings">
+                        <input type="text" id="geminiApiKey" placeholder="کلید API Gemini">
+                        <button id="verifyGeminiApiButton">تأیید Gemini</button>
+                        <input type="text" id="openRouterApiKey" placeholder="کلید API OpenRouter">
+                        <button id="verifyOpenRouterApiButton">تأیید OpenRouter</button>
+                        <input type="file" id="fileInput" accept=".txt,.docx,.pdf,.srt" style="margin-top: 0.5rem;">
+                        <div class="control-options">
+                            <div class="control-option active" data-model="lm-studio">LM Studio</div>
+                            <div class="control-option" data-model="gemini">Gemini</div>
+                            <div class="control-option" data-model="openrouter">OpenRouter</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>شخصی‌سازی</h3>
+                    <div class="customization-settings">
+                        <input type="color" id="primaryColor" value="#4a6fa5">
+                        <label for="primaryColor">رنگ اصلی</label>
+                        <input type="number" id="fontSizeMain" min="12" max="24" value="18">
+                        <label for="fontSizeMain">اندازه فونت اصلی</label>
+                        <input type="number" id="fontSizeSub" min="10" max="20" value="16">
+                        <label for="fontSizeSub">اندازه فونت فرعی</label>
+                        <button id="applyCustomization">اعمال تغییرات</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <h3>تاریخچه ترجمه‌ها</h3>
+                <div class="history-list" id="historyList"></div>
+                <div class="button-container">
+                    <button id="backupHistory">بکاپ تاریخچه</button>
+                    <input type="file" id="restoreHistoryInput" accept=".json" style="display: none;">
+                    <button id="restoreHistory">بازیابی تاریخچه</button>
+                    <button id="clearHistory">پاک کردن تاریخچه</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            برنامه‌نویس: احسان شمسی
+        </footer>
+    </div>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const outputLanguage = document.getElementById('outputLanguage');
+        const detectedLang = document.getElementById('detectedLang');
+        const toneOptions = document.querySelectorAll('.control-option[data-tone]');
+        const lmStatus = document.getElementById('lmStatus');
+        const geminiStatus = document.getElementById('geminiStatus');
+        const openRouterStatus = document.getElementById('openRouterStatus');
+        const translateButton = document.getElementById('translateButton');
+        const stopButton = document.getElementById('stopButton');
+        const clearButton = document.getElementById('clearButton');
+        const swapButton = document.getElementById('swapButton');
+        const copyButton = document.getElementById('copyButton');
+        const saveButton = document.getElementById('saveButton');
+        const saveSrtButton = document.getElementById('saveSrtButton');
+        const translationStatus = document.getElementById('translationStatus');
+        const geminiApiKey = document.getElementById('geminiApiKey');
+        const openRouterApiKey = document.getElementById('openRouterApiKey');
+        const verifyGeminiApiButton = document.getElementById('verifyGeminiApiButton');
+        const verifyOpenRouterApiButton = document.getElementById('verifyOpenRouterApiButton');
+        const modelOptions = document.querySelectorAll('.control-option[data-model]');
+        const fileInput = document.getElementById('fileInput');
+        const primaryColor = document.getElementById('primaryColor');
+        const fontSizeMain = document.getElementById('fontSizeMain');
+        const fontSizeSub = document.getElementById('fontSizeSub');
+        const applyCustomization = document.getElementById('applyCustomization');
+        const historyList = document.getElementById('historyList');
+        const backupHistory = document.getElementById('backupHistory');
+        const restoreHistoryInput = document.getElementById('restoreHistoryInput');
+        const restoreHistory = document.getElementById('restoreHistory');
+        const clearHistory = document.getElementById('clearHistory');
+
+        let currentTheme = 'light';
+        let currentTone = 'formal';
+        let currentModel = 'lm-studio';
+        let isLmConnected = false;
+        let isGeminiConnected = false;
+        let isOpenRouterConnected = false;
+        let currentStream = null;
+        let abortController = null;
+        let isTranslating = false;
+        let partialTranslation = '';
+        let lastPrompt = '';
+        let geminiModel = 'gemini-1.5-flash';
+        let history = JSON.parse(localStorage.getItem('translationHistory')) || [];
+        let srtTimestamps = []; // برای ذخیره تایم‌کدهای فایل SRT
+
+        const supportedLanguages = [
+            { code: 'fa', name: 'فارسی' },
+            { code: 'en', name: 'انگلیسی' },
+            { code: 'es', name: 'اسپانیایی' },
+            { code: 'zh', name: 'چینی (ساده‌شده)' },
+            { code: 'ar', name: 'عربی' },
+            { code: 'hi', name: 'هندی' },
+            { code: 'ru', name: 'روسی' },
+            { code: 'pt', name: 'پرتغالی' },
+            { code: 'fr', name: 'فرانسوی' },
+            { code: 'de', name: 'آلمانی' },
+            { code: 'ja', name: 'ژاپنی' },
+            { code: 'ko', name: 'کره‌ای' },
+            { code: 'it', name: 'ایتالیایی' },
+            { code: 'tr', name: 'ترکی' },
+            { code: 'vi', name: 'ویتنامی' },
+            { code: 'th', name: 'تایلندی' },
+            { code: 'pl', name: 'لهستانی' },
+            { code: 'uk', name: 'اوکراینی' },
+            { code: 'nl', name: 'هلندی' },
+            { code: 'id', name: 'اندونزیایی' },
+            { code: 'ms', name: 'مالایی' },
+            { code: 'bn', name: 'بنگالی' },
+            { code: 'ta', name: 'تامیلی' },
+            { code: 'te', name: 'تلوگویی' },
+            { code: 'ur', name: 'اردو' },
+            { code: 'sw', name: 'سواحلی' },
+            { code: 'el', name: 'یونانی' },
+            { code: 'he', name: 'عبری' },
+            { code: 'cs', name: 'چکی' },
+            { code: 'sv', name: 'سوئدی' }
+        ];
+
+        function loadApiKeys() {
+            geminiApiKey.value = localStorage.getItem('geminiApiKey') || '';
+            openRouterApiKey.value = localStorage.getItem('openRouterApiKey') || '';
+            if (geminiApiKey.value) checkGeminiConnection();
+            if (openRouterApiKey.value) checkOpenRouterConnection();
+        }
+
+        function saveApiKeys() {
+            localStorage.setItem('geminiApiKey', geminiApiKey.value.trim());
+            localStorage.setItem('openRouterApiKey', openRouterApiKey.value.trim());
+        }
+
+        function init() {
+            loadApiKeys();
+            checkLmConnection();
+            setupEventListeners();
+            loadHistory();
+            adjustTextareaHeight();
+            loadCustomization();
+            loadSupportedLanguages();
+        }
+
+        function adjustTextareaHeight() {
+            inputText.style.height = 'auto';
+            inputText.style.height = `${inputText.scrollHeight}px`;
+            outputText.style.height = 'auto';
+            outputText.style.height = `${outputText.scrollHeight}px`;
+        }
+
+        function checkLmConnection() {
+            fetch('http://localhost:1234/v1/models')
+                .then(response => {
+                    if (response.ok) {
+                        isLmConnected = true;
+                        lmStatus.querySelector('.status-indicator').classList.add('connected');
+                        lmStatus.querySelector('.status-text').textContent = 'متصل به LM Studio';
+                    } else {
+                        throw new Error('اتصال برقرار نشد');
+                    }
+                })
+                .catch(() => {
+                    isLmConnected = false;
+                    lmStatus.querySelector('.status-indicator').classList.remove('connected');
+                    lmStatus.querySelector('.status-text').textContent = 'عدم اتصال به LM Studio';
+                });
+        }
+
+        async function checkGeminiConnection() {
+            const apiKey = geminiApiKey.value.trim();
+            if (!apiKey) {
+                isGeminiConnected = false;
+                geminiStatus.querySelector('.status-indicator').classList.remove('connected');
+                geminiStatus.querySelector('.status-text').textContent = 'عدم اتصال به Gemini';
+                return;
+            }
+
+            const models = ['gemini-pro', 'gemini-1.5-flash'];
+            for (const model of models) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: 'test' }] }] })
+                    });
+                    if (response.ok) {
+                        isGeminiConnected = true;
+                        geminiModel = model;
+                        geminiStatus.querySelector('.status-indicator').classList.add('connected');
+                        geminiStatus.querySelector('.status-text').textContent = `متصل به Gemini (${model})`;
+                        break;
+                    }
+                } catch (error) {
+                    console.log(`مدل ${model} کار نکرد:`, error);
+                }
+            }
+
+            if (!isGeminiConnected) {
+                geminiStatus.querySelector('.status-indicator').classList.remove('connected');
+                geminiStatus.querySelector('.status-text').textContent = 'عدم اتصال به Gemini';
+            }
+        }
+
+        function checkOpenRouterConnection() {
+            const apiKey = openRouterApiKey.value.trim();
+            if (!apiKey) {
+                isOpenRouterConnected = false;
+                openRouterStatus.querySelector('.status-indicator').classList.remove('connected');
+                openRouterStatus.querySelector('.status-text').textContent = 'عدم اتصال به OpenRouter';
+                return;
+            }
+            fetch('https://openrouter.ai/api/v1/models', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        isOpenRouterConnected = true;
+                        openRouterStatus.querySelector('.status-indicator').classList.add('connected');
+                        openRouterStatus.querySelector('.status-text').textContent = 'متصل به OpenRouter';
+                    } else {
+                        throw new Error('اتصال برقرار نشد');
+                    }
+                })
+                .catch(() => {
+                    isOpenRouterConnected = false;
+                    openRouterStatus.querySelector('.status-indicator').classList.remove('connected');
+                    openRouterStatus.querySelector('.status-text').textContent = 'عدم اتصال به OpenRouter';
+                });
+        }
+
+        function loadSupportedLanguages() {
+            outputLanguage.innerHTML = supportedLanguages.map(lang => `<option value="${lang.code}">${lang.name}</option>`).join('');
+            outputLanguage.value = 'fa'; // پیش‌فرض روی فارسی
+        }
+
+        function setupEventListeners() {
+            themeToggle.addEventListener('click', toggleTheme);
+            translateButton.addEventListener('click', translateText);
+            stopButton.addEventListener('click', stopTranslation);
+            clearButton.addEventListener('click', clearText);
+            swapButton.addEventListener('click', swapText);
+            copyButton.addEventListener('click', copyToClipboard);
+            saveButton.addEventListener('click', saveAsWord);
+            saveSrtButton.addEventListener('click', saveAsSrt);
+            toneOptions.forEach(option => option.addEventListener('click', () => setActiveTone(option)));
+            modelOptions.forEach(option => option.addEventListener('click', () => setActiveModel(option)));
+            verifyGeminiApiButton.addEventListener('click', () => { saveApiKeys(); checkGeminiConnection(); });
+            verifyOpenRouterApiButton.addEventListener('click', () => { saveApiKeys(); checkOpenRouterConnection(); });
+            fileInput.addEventListener('change', handleFileUpload);
+            inputText.addEventListener('input', adjustTextareaHeight);
+            outputText.addEventListener('input', adjustTextareaHeight);
+            applyCustomization.addEventListener('click', applyCustomizationSettings);
+            backupHistory.addEventListener('click', backupHistoryToFile);
+            restoreHistory.addEventListener('click', () => restoreHistoryInput.click());
+            restoreHistoryInput.addEventListener('change', restoreHistoryFromFile);
+            clearHistory.addEventListener('click', clearHistoryList);
+        }
+
+        function toggleTheme() {
+            if (currentTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+                currentTheme = 'dark';
+            } else {
+                body.removeAttribute('data-theme');
+                themeToggle.textContent = '🌙';
+                currentTheme = 'light';
+            }
+        }
+
+        function setActiveTone(selectedOption) {
+            toneOptions.forEach(option => option.classList.remove('active'));
+            selectedOption.classList.add('active');
+            currentTone = selectedOption.dataset.tone;
+        }
+
+        function setActiveModel(selectedOption) {
+            modelOptions.forEach(option => option.classList.remove('active'));
+            selectedOption.classList.add('active');
+            currentModel = selectedOption.dataset.model;
+        }
+
+        async function detectLanguage(text) {
+            if (text.match(/[\u0600-\u06FF]/)) return 'fa';
+            if (text.match(/[a-zA-Z]/)) return 'en';
+            if (text.match(/[\u0750-\u077F]/)) return 'ar';
+            return 'unknown';
+        }
+
+        async function translateText() {
+            if (isTranslating) return;
+            if ((!isLmConnected && currentModel === 'lm-studio') || 
+                (!isGeminiConnected && currentModel === 'gemini') || 
+                (!isOpenRouterConnected && currentModel === 'openrouter') || 
+                !inputText.value.trim()) {
+                outputText.value = '';
+                translationStatus.textContent = 'متن ورودی خالی است';
+                return;
+            }
+
+            outputText.value = '';
+            translationStatus.textContent = 'در حال ترجمه...';
+            stopButton.textContent = 'توقف ترجمه';
+            isTranslating = true;
+            abortController = new AbortController();
+
+            const textToTranslate = inputText.value;
+            const targetLang = outputLanguage.value;
+            const sourceLang = await detectLanguage(textToTranslate);
+            detectedLang.textContent = sourceLang === 'fa' ? 'فارسی' : sourceLang === 'en' ? 'انگلیسی' : sourceLang === 'ar' ? 'عربی' : 'ناشناخته';
+
+            let toneInstruction = '';
+            switch (currentTone) {
+                case 'formal': toneInstruction = 'Translate formally: '; break;
+                case 'informal': toneInstruction = 'Translate informally: '; break;
+                case 'literary': toneInstruction = 'Translate in a literary style: '; break;
+                case 'scientific': toneInstruction = 'Translate in a scientific tone: '; break;
+                case 'summary': toneInstruction = 'First translate formally, then summarize informally: '; break;
+                case 'friendly': toneInstruction = 'Translate in a friendly tone: '; break;
+                case 'humorous': toneInstruction = 'Translate with a humorous tone: '; break;
+                case 'professional': toneInstruction = 'Translate in a professional tone: '; break;
+                case 'childish': toneInstruction = 'Translate in a childish tone suitable for kids: '; break;
+            }
+
+            const maxChunkSize = 2000;
+            if (textToTranslate.length > maxChunkSize) {
+                const chunks = [];
+                for (let i = 0; i < textToTranslate.length; i += maxChunkSize) {
+                    chunks.push(textToTranslate.slice(i, i + maxChunkSize));
+                }
+                for (const chunk of chunks) {
+                    await translateChunk(chunk, sourceLang, targetLang, toneInstruction);
+                    if (!isTranslating) break;
+                }
+            } else {
+                await translateChunk(textToTranslate, sourceLang, targetLang, toneInstruction);
+            }
+
+            if (isTranslating) {
+                translationStatus.textContent = 'ترجمه به پایان رسید';
+                isTranslating = false;
+                saveToHistory(textToTranslate, outputText.value);
+            }
+        }
+
+        async function translateChunk(text, sourceLang, targetLang, toneInstruction) {
+            lastPrompt = `${toneInstruction}"${text}" from ${sourceLang} to ${targetLang}. Provide only the translated text in the target language.`;
+            if (currentModel === 'lm-studio') {
+                await translateWithLmStudio(lastPrompt);
+            } else if (currentModel === 'gemini') {
+                await translateWithGemini(lastPrompt);
+            } else if (currentModel === 'openrouter') {
+                await translateWithOpenRouter(lastPrompt);
+            }
+        }
+
+        async function translateWithLmStudio(prompt) {
+            try {
+                const response = await fetch('http://localhost:1234/v1/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        max_tokens: 1000,
+                        temperature: 0.7,
+                        stream: true
+                    }),
+                    signal: abortController.signal
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                currentStream = reader;
+
+                let fullTranslation = outputText.value;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done || !isTranslating) break;
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            const parsed = JSON.parse(data);
+                            fullTranslation += parsed.choices[0].text || '';
+                            outputText.value = fullTranslation;
+                            outputText.scrollTop = outputText.scrollHeight;
+                            adjustTextareaHeight();
+                        }
+                    }
+                }
+                partialTranslation = fullTranslation;
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('خطا در LM Studio:', error);
+                    translationStatus.textContent = 'خطا در اتصال به LM Studio';
+                    isTranslating = false;
+                }
+            } finally {
+                currentStream = null;
+            }
+        }
+
+        async function translateWithGemini(prompt) {
+            const apiKey = geminiApiKey.value.trim();
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { maxOutputTokens: 2000 }
+                    }),
+                    signal: abortController.signal
+                });
+
+                if (!response.ok) throw new Error(`خطا در پاسخ Gemini: ${response.status}`);
+
+                const data = await response.json();
+                let fullTranslation = data.candidates[0].content.parts[0].text || 'ترجمه دریافت نشد';
+
+                if (currentTone === 'summary') {
+                    const formalPart = fullTranslation;
+                    const summaryPrompt = `Summarize informally in ${outputLanguage.value}: "${formalPart}"`;
+                    const summaryResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: summaryPrompt }] }] }),
+                        signal: abortController.signal
+                    });
+                    const summaryData = await summaryResponse.json();
+                    const informalSummary = summaryData.candidates[0].content.parts[0].text || '';
+                    fullTranslation = `${formalPart}\n\nخلاصه غیررسمی:\n${informalSummary}`;
+                }
+
+                outputText.value = outputText.value ? outputText.value + '\n' + fullTranslation : fullTranslation;
+                outputText.scrollTop = outputText.scrollHeight;
+                adjustTextareaHeight();
+                partialTranslation = outputText.value;
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('خطا در Gemini:', error);
+                    translationStatus.textContent = error.message.includes('401') ? 'کلید API Gemini نامعتبر است' : 'خطا در اتصال به Gemini';
+                    isTranslating = false;
+                }
+            } finally {
+                currentStream = null;
+            }
+        }
+
+        async function translateWithOpenRouter(prompt) {
+            const apiKey = openRouterApiKey.value.trim();
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'openai/gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 2000,
+                        stream: true
+                    }),
+                    signal: abortController.signal
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                currentStream = reader;
+
+                let fullTranslation = outputText.value;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done || !isTranslating) break;
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            const parsed = JSON.parse(data);
+                            fullTranslation += parsed.choices[0].delta.content || '';
+                            outputText.value = fullTranslation;
+                            outputText.scrollTop = outputText.scrollHeight;
+                            adjustTextareaHeight();
+                        }
+                    }
+                }
+                partialTranslation = fullTranslation;
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('خطا در OpenRouter:', error);
+                    translationStatus.textContent = 'خطا در اتصال به OpenRouter';
+                    isTranslating = false;
+                }
+            } finally {
+                currentStream = null;
+            }
+        }
+
+        function stopTranslation() {
+            if (!isTranslating) return;
+
+            if (abortController) {
+                abortController.abort();
+            }
+            isTranslating = false;
+            currentStream = null;
+            partialTranslation = outputText.value;
+            translationStatus.textContent = 'ترجمه متوقف شد';
+            stopButton.textContent = 'توقف ترجمه';
+        }
+
+        function clearText() {
+            if (isTranslating) stopTranslation();
+            inputText.value = '';
+            outputText.value = '';
+            partialTranslation = '';
+            srtTimestamps = []; // پاک کردن تایم‌کدها
+            translationStatus.textContent = '';
+            detectedLang.textContent = 'تشخیص خودکار';
+            adjustTextareaHeight();
+        }
+
+        function swapText() {
+            const temp = inputText.value;
+            inputText.value = outputText.value;
+            outputText.value = temp;
+            const detected = detectedLang.textContent;
+            detectedLang.textContent = supportedLanguages.find(lang => lang.code === outputLanguage.value)?.name || 'تشخیص خودکار';
+            outputLanguage.value = detected === 'فارسی' ? 'fa' : detected === 'انگلیسی' ? 'en' : detected === 'عربی' ? 'ar' : 'fa';
+            adjustTextareaHeight();
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                translationStatus.textContent = 'ترجمه در کلیپ‌بورد کپی شد';
+                setTimeout(() => translationStatus.textContent = '', 2000);
+            });
+        }
+
+        function saveAsWord() {
+            if (!outputText.value) {
+                translationStatus.textContent = 'هیچ متنی برای ذخیره وجود ندارد';
+                return;
+            }
+            const zip = new JSZip();
+            zip.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                    <w:body>
+                        <w:p>
+                            <w:r>
+                                <w:t xml:space="preserve">${outputText.value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '</w:t></w:r></w:p><w:p><w:r><w:t xml:space="preserve">')}</w:t>
+                            </w:r>
+                        </w:p>
+                    </w:body>
+                </w:document>`);
+            zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+            zip.file("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+            zip.generateAsync({ type: "blob" }).then(blob => {
+                saveAs(blob, "translation.docx");
+                translationStatus.textContent = 'فایل Word ذخیره شد';
+                setTimeout(() => translationStatus.textContent = '', 2000);
+            });
+        }
+
+        function saveAsSrt() {
+            if (!outputText.value) {
+                translationStatus.textContent = 'هیچ متنی برای ذخیره وجود ندارد';
+                return;
+            }
+
+            let srtContent = '';
+            const inputLines = inputText.value.split('\n\n');
+            const outputLines = outputText.value.split('\n\n');
+
+            if (srtTimestamps.length > 0 && srtTimestamps.length === outputLines.length) {
+                // استفاده از تایم‌کدهای اصلی فایل SRT
+                srtTimestamps.forEach((timestamp, index) => {
+                    srtContent += `${index + 1}\n${timestamp}\n${outputLines[index] || ''}\n\n`;
+                });
+            } else {
+                // تولید تایم‌کد پیش‌فرض
+                outputLines.forEach((line, index) => {
+                    const startTime = new Date(index * 2000).toISOString().substr(11, 12).replace('.', ',');
+                    const endTime = new Date((index + 1) * 2000).toISOString().substr(11, 12).replace('.', ',');
+                    srtContent += `${index + 1}\n${startTime} --> ${endTime}\n${line}\n\n`;
+                });
+            }
+
+            const blob = new Blob([srtContent], { type: 'text/srt;charset=utf-8' });
+            saveAs(blob, 'translation.srt');
+            translationStatus.textContent = 'فایل SRT ذخیره شد';
+            setTimeout(() => translationStatus.textContent = '', 2000);
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.type === 'text/plain') {
+                inputText.value = await file.text();
+            } else if (file.name.endsWith('.docx')) {
+                const arrayBuffer = await file.arrayBuffer();
+                const zip = new JSZip();
+                const content = await zip.loadAsync(arrayBuffer);
+                const xml = await content.file('word/document.xml').async('string');
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(xml, 'application/xml');
+                inputText.value = doc.querySelector('body').textContent;
+            } else if (file.type === 'application/pdf') {
+                const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+                let text = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    text += content.items.map(item => item.str).join(' ') + '\n';
+                }
+                inputText.value = text;
+            } else if (file.name.endsWith('.srt')) {
+                const text = await file.text();
+                const lines = text.split('\n\n');
+                srtTimestamps = [];
+                let subtitleText = '';
+                lines.forEach((block, index) => {
+                    const parts = block.split('\n');
+                    if (parts.length >= 3) {
+                        srtTimestamps.push(parts[1]); // ذخیره تایم‌کد
+                        subtitleText += parts.slice(2).join('\n') + (index < lines.length - 1 ? '\n\n' : '');
+                    }
+                });
+                inputText.value = subtitleText;
+            }
+            adjustTextareaHeight();
+        }
+
+        function applyCustomizationSettings() {
+            document.documentElement.style.setProperty('--primary-color', primaryColor.value);
+            document.documentElement.style.setProperty('--font-size-main', `${fontSizeMain.value}px`);
+            document.documentElement.style.setProperty('--font-size-sub', `${fontSizeSub.value}px`);
+            localStorage.setItem('customization', JSON.stringify({
+                primaryColor: primaryColor.value,
+                fontSizeMain: fontSizeMain.value,
+                fontSizeSub: fontSizeSub.value
+            }));
+            adjustTextareaHeight();
+        }
+
+        function loadCustomization() {
+            const saved = JSON.parse(localStorage.getItem('customization'));
+            if (saved) {
+                primaryColor.value = saved.primaryColor;
+                fontSizeMain.value = saved.fontSizeMain;
+                fontSizeSub.value = saved.fontSizeSub;
+                applyCustomizationSettings();
+            }
+        }
+
+        function saveToHistory(input, output) {
+            history.unshift({ input, output, date: new Date().toLocaleString('fa-IR') });
+            localStorage.setItem('translationHistory', JSON.stringify(history));
+            loadHistory();
+        }
+
+        function loadHistory() {
+            historyList.innerHTML = '';
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `<span>${item.date}: ${item.input.slice(0, 50)}... -> ${item.output.slice(0, 50)}...</span><button onclick="deleteHistoryItem(${index})">حذف</button>`;
+                historyList.appendChild(div);
+            });
+        }
+
+        window.deleteHistoryItem = function(index) {
+            if (confirm('آیا مطمئن هستید که می‌خواهید این مورد را حذف کنید؟')) {
+                history.splice(index, 1);
+                localStorage.setItem('translationHistory', JSON.stringify(history));
+                loadHistory();
+                translationStatus.textContent = 'مورد از تاریخچه حذف شد';
+                setTimeout(() => translationStatus.textContent = '', 2000);
+            }
+        }
+
+        function backupHistoryToFile() {
+            const blob = new Blob([JSON.stringify(history)], { type: 'application/json' });
+            saveAs(blob, 'translation_history_backup.json');
+            translationStatus.textContent = 'بکاپ تاریخچه ذخیره شد';
+            setTimeout(() => translationStatus.textContent = '', 2000);
+        }
+
+        async function restoreHistoryFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            history = JSON.parse(text);
+            localStorage.setItem('translationHistory', JSON.stringify(history));
+            loadHistory();
+            translationStatus.textContent = 'تاریخچه بازیابی شد';
+            setTimeout(() => translationStatus.textContent = '', 2000);
+        }
+
+        function clearHistoryList() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید کل تاریخچه را پاک کنید؟')) {
+                history = [];
+                localStorage.removeItem('translationHistory');
+                loadHistory();
+                translationStatus.textContent = 'تاریخچه پاک شد';
+                setTimeout(() => translationStatus.textContent = '', 2000);
+            }
+        }
+
+        init();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+</body>
+</html>
